@@ -1,0 +1,173 @@
+{
+	"info": {
+		"_postman_id": "255f681f-3df1-4783-bafa-0d1618327be4",
+		"name": "iCertis",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "iCertis Durable Trigger",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "828ddce7-b911-4f22-ad80-4527495c43ad",
+						"exec": [
+							"// example using pm.response.to.be*\r",
+							"pm.test(\"response must be valid and have a body\", function () {\r",
+							"     // assert that the status code is 200\r",
+							"     pm.response.to.be.accepted; // info, success, redirection, clientError,  serverError, are other variants\r",
+							"     // assert that the response has a valid JSON body\r",
+							"     pm.response.to.be.withBody;\r",
+							"     pm.response.to.be.json; // this assertion also checks if a body  exists, so the above check is not needed\r",
+							"     var jsonData = pm.response.json();\r",
+							"});\r",
+							"\r",
+							"pm.test(\"evaluate webhook\", function() {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.statusQueryGetUri).to.contain(\"webhooks\");\r",
+							"\r",
+							"\r",
+							"    var url = jsonData.statusQueryGetUri\r",
+							"    console.log(url)\r",
+							"    retry = parseInt(pm.response.headers.get('Retry-After')) * 1000;\r",
+							"    pm.environment.set(\"retry\", retry)\r",
+							"    pm.environment.set('statusUrl', url)\r",
+							"    console.log(retry)\r",
+							"    postman.setNextRequest(\"CheckStatusUntilComplete\")\r",
+							"    \r",
+							"  \r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://xxx.azurewebsites.net/api/trigger_HttpStart",
+					"protocol": "https",
+					"host": [
+						"xxx",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"api",
+						"trigger_HttpStart"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CheckStatusUntilComplete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "300d0d24-72bd-49ca-9099-2d31fe048ea9",
+						"exec": [
+							"pm.test(\"Retry until Success\", function () {",
+							"    console.log(\"running retry test\")",
+							"     retry = pm.environment.get('retry');",
+							"     console.log(retry)",
+							"         // assert that the status code is 200",
+							"     ",
+							"     // assert that the response has a valid JSON body",
+							"     pm.response.to.be.withBody;",
+							"     pm.response.to.be.json; // this assertion also checks if a body  exists, so the above check is not needed",
+							"     var jsonData = pm.response.json();",
+							"     runtimeStatus = jsonData.runtimeStatus;",
+							"     console.log(runtimeStatus);",
+							"     if (runtimeStatus == 'Completed') {",
+							"         pm.response.to.be.ok; // info, success, redirection, clientError,  serverError, are other variants",
+							"         console.log(\"length \" + jsonData.output.length)",
+							"         pm.test(\"output to equal 200\", pm.expect(jsonData.output.length).to.equal(200))",
+							"        ",
+							"        startTime = new Date(jsonData.createdTime);",
+							"        endTime = new Date(jsonData.lastUpdatedTime);",
+							"        duration = Math.abs(endTime.getTime() - startTime.getTime()) / 1000",
+							"        console.log(\"druation \" + duration + \" seconds\")",
+							"        pm.expect(duration).to.be.below(40)",
+							"        //\"createdTime\": \"2018-11-06T18:15:09Z\",",
+							"        //\"lastUpdatedTime\": \"2018-11-06T18:15:47Z\"",
+							"    ",
+							"         postman.setNextRequest(null);",
+							"     } else {",
+							"         pm.response.to.be.accepted; // info, success, redirection, clientError,  serverError, are other variants",
+							"         console.log(\"rerunning \" + pm.info.requestName)",
+							"        setTimeout(() => {",
+							"            postman.setNextRequest(pm.info.requestName)",
+							"        }, retry)",
+							"     }",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{statusUrl}}",
+					"host": [
+						"{{statusUrl}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "b56184f3-d67a-4bfe-9375-542e287cbc12",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "b3281a0b-035e-4d16-810b-002a7c4dd3ce",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "950102f2-07fa-4ca1-ba0d-db482629d7a1",
+			"key": "statusUrl",
+			"value": "https://postman-echo.com/get",
+			"type": "string"
+		},
+		{
+			"id": "6ce7008f-5ffe-426b-b1de-e5e8ed75c004",
+			"key": "retry",
+			"value": "1000",
+			"type": "string"
+		}
+	]
+}

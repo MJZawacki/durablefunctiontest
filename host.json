@@ -1,0 +1,9 @@
+{
+    "version": "2.0",
+    "durableTask": {
+        "maxConcurrentActivityFunctions": 5,
+        "maxConcurrentOrchestratorFunctions": 1,
+        "azureStorageConnectionStringName": "DurableStorageAppSetting"
+    },
+    "functionTimeout": "00:01:00"
+}

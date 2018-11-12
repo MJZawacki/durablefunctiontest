@@ -12,7 +12,8 @@ let RetriesStats = new Trend("Retries");
 let Failures = new Counter("Failures");
 let maxtry = 20
 
-let testurl = "https://xxx.azurewebsites.net/api/trigger_HttpStart";
+let HOST = 'https://xxx.azurewebsites.net'
+let testurl = HOST + "/api/trigger_HttpStart";
 export let options = {
     // Add VU ramping option, total test length is 3m
     stages: [
